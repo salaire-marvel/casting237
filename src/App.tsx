@@ -216,6 +216,24 @@ function App() {
       };
       setAllReservations((prev) => [...prev, newReservation]);
 
+      // Envoi de l'email de confirmation (non-bloquant)
+      const currentCastingDate = castingDates.find((d) => d.id === currentDateId);
+      if (currentCastingDate) {
+        supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            timeslot: selectedSlot,
+            castingDate: currentCastingDate.date,
+            castingTitle: currentCastingDate.title,
+          },
+        }).catch((err) => {
+          console.error('Email sending failed (non-critical):', err);
+          // L'échec de l'email n'affecte pas la réservation
+        });
+      }
+
       handleCloseModal();
       setShowSuccess(true);
     } catch (error) {
